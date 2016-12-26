@@ -102,11 +102,14 @@ public class MainActivity extends AppCompatActivity {
 	 * Iterate over the Cursor, extracting each album name and song
 	 * title.
 	 */
+	System.out.println("SAMPATH");
 	while (cursor.moveToNext()) {
 	    // Extract the song title.
 	    String title = cursor.getString(titleIdx);
+	    System.out.println(title);
 	    // Extract the album name.
 	    String album = cursor.getString(albumIdx);
+	    System.out.println("Sampath " + album);
 	    result[cursor.getPosition()] = title + " (" + album + ")";
 	}
 	// Close the Cursor.
