@@ -1,6 +1,7 @@
 package com.adda.ours.ringtonerandomizer;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.Ringtone;
@@ -21,7 +22,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+//        code to choose files
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("file/*");
+        startActivityForResult(intent, 2);
+//        code to choose files ends
         Ringtone defaultRingtone = RingtoneManager.getRingtone(getApplicationContext(),
                 Settings.System.DEFAULT_RINGTONE_URI);
         defaultRingtone.play();
