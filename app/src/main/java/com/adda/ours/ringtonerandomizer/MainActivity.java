@@ -17,15 +17,15 @@ import android.os.Bundle;
 public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
-
+    private static final int SELECTED_A_FILE = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //        code to choose files
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("file/*");
-        startActivityForResult(intent, 2);
+        intent.setType("audio/*");
+        startActivityForResult(intent, SELECTED_A_FILE);
 //        code to choose files ends
         Ringtone defaultRingtone = RingtoneManager.getRingtone(getApplicationContext(),
                 Settings.System.DEFAULT_RINGTONE_URI);
@@ -119,5 +119,16 @@ public class MainActivity extends AppCompatActivity {
 	}
 	// Close the Cursor.
 	cursor.close();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	// Check which request we're responding to
+	if (requestCode == SELECTED_A_FILE) {
+	    // Make sure the request was successful
+	    if (resultCode == RESULT_OK) {
+		System.out.println(data);
+	    }
+	}
     }
 }
