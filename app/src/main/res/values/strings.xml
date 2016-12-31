@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Ringtone Randomizer</string>
+    <string name="ringtone_list">Ringtone\'s list</string>
+    <string name="add_tone">Add tone</string>
 </resources>
