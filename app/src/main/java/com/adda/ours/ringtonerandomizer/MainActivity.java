@@ -9,23 +9,43 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.provider.UserDictionary;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.test.mock.MockContentResolver;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
+
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int SELECTED_A_FILE = 1;
+    private Cursor mCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        code to choose files
+        //        code to choose files
+        mCursor = getMediaCursor();
+
+//        mCursor = getWordCursor();
+
+        if (null == mCursor) {
+        } else if (mCursor.getCount() < 1) {
+        } else {
+            int limit = 1;
+            while (mCursor.moveToNext() && limit > 0) {
+                Log.i(TAG, "title " + mCursor.getString(0));
+                Log.i(TAG, "album " + mCursor.getString(1));
+            }
+        }
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -38,25 +58,68 @@ public class MainActivity extends AppCompatActivity {
         defaultRingtone.play();
     }
 
+    private Cursor getMediaCursor() {
+
+        String[] mProjection =
+                {
+                        MediaStore.Audio.Media._ID,
+                        MediaStore.Audio.Media.ALBUM
+                };
+        String mSelectionClause = null;
+        String[] mSelectionArgs = null;
+//        mSelectionArgs[0] = "";
+        String mSortOrder = null;
+        Log.i(TAG, "URI " + MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        mCursor = getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                mProjection,
+                mSelectionClause,
+                mSelectionArgs,
+                mSortOrder);
+        return mCursor;
+    }
+
+    private void getWordCursor() {
+        String[] mSelectionArgs = {""};
+        String mSearchString = "";
+        String mSelectionClause = null;
+        if (TextUtils.isEmpty(mSearchString)) {
+            mSelectionClause = null;
+            mSelectionArgs[0] = "";
+        } else {
+            mSelectionClause = UserDictionary.Words.WORD + " = ?";
+            mSelectionArgs[0] = mSearchString;
+        }
+        String[] mProjection =
+                {
+                        UserDictionary.Words._ID,    // Contract class constant for the _ID column name
+                        UserDictionary.Words.WORD,   // Contract class constant for the word column name
+                        UserDictionary.Words.LOCALE  // Contract class constant for the locale column name
+                };
+        String mSortOrder = null;
+        mCursor = getContentResolver().query(
+                UserDictionary.Words.CONTENT_URI,  // The content URI of the words table
+                mProjection,                       // The columns to return for each row
+                mSelectionClause,                   // Either null, or the word the user entered
+                mSelectionArgs,                    // Either empty, or the string the user entered
+                mSortOrder);                       // The sort order for the returned rows
+    }
+
     private void checkForPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                        should show reason here
+                //                        should show reason here
             } else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
             }
         } else {
-
-            System.out.println("hello");
             listMedia();
         }
     }
-
-
 
 
     @Override
@@ -102,18 +165,20 @@ public class MainActivity extends AppCompatActivity {
         // Create an array to store the result set.
         String[] result = new String[cursor.getCount()];
     /*
-	 * Iterate over the Cursor, extracting each album name and song
+     * Iterate over the Cursor, extracting each album name and song
 	 * title.
 	 */
-        System.out.println("SAMPATH");
-        while (cursor.moveToNext()) {
+        int limit = 2;
+        Log.i(TAG, "Total Count " + cursor.getCount());
+        while (cursor.moveToNext() && limit > 0) {
             // Extract the song title.
             String title = cursor.getString(titleIdx);
-            System.out.println(title);
+            Log.i(TAG, "title " + title);
             // Extract the album name.
             String album = cursor.getString(albumIdx);
-            System.out.println("Sampath " + album);
+            Log.i(TAG, "album " + album);
             result[cursor.getPosition()] = title + " (" + album + ")";
+            // limit--;
         }
         // Close the Cursor.
         cursor.close();
@@ -125,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == SELECTED_A_FILE) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                System.out.println(data);
+                Log.i(TAG, "Selected file " + data);
             }
         }
     }
