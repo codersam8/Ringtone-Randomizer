@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int SELECTED_A_FILE = 1;
     private Cursor mCursor;
 
+    private static final String PREFS_NAME = "SongsList";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -173,6 +175,20 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
     }
 
+    private void persistSong(Uri uri) {
+	String[] projection = new String[] {
+	    MediaStore.Audio.AudioColumns.TITLE};
+	Cursor cursor = getContentResolver().query(
+						   uri,
+						   projection,
+						   null,
+						   null,
+						   null);
+	while(cursor.moveToNext()) {
+	    Log.i(TAG, "Title " + cursor.getString(0));
+	}
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
@@ -181,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Log.i(TAG, "Selected file " + data.getData());
                 playASong(data.getData());
+		persistSong(data.getData());
             }
         }
     }
