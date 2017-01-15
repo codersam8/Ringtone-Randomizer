@@ -40,21 +40,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-	//        getMediaCursor();
+        //        getMediaCursor();
 
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
-		public void onClick(View v) {
-		    checkForPermissions();
-		}
-	    });
+            public void onClick(View v) {
+                checkForPermissions();
+            }
+        });
 
-	listSavedTones();
+        listSavedTones();
     }
 
     private void listSavedTones() {
-	SharedPreferences songsList = getPreferences(MODE_PRIVATE);
-	Map<String, ?> songsKeyVal = songsList.getAll();
+        SharedPreferences songsList = getPreferences(MODE_PRIVATE);
+        Map<String, ?> songsKeyVal = songsList.getAll();
         for (Map.Entry<String, ?> entry : songsKeyVal.entrySet()) {
             Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
         }
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void playRingtone() {
         Ringtone defaultRingtone = RingtoneManager.getRingtone(getApplicationContext(),
-							       Settings.System.DEFAULT_RINGTONE_URI);
+                Settings.System.DEFAULT_RINGTONE_URI);
         defaultRingtone.play();
     }
 
@@ -80,21 +80,21 @@ public class MainActivity extends AppCompatActivity {
 
     private Cursor getMediaCursor() {
         String[] mProjection =
-	    {
-		MediaStore.Audio.Media._ID,
-		MediaStore.Audio.Media.ALBUM
-	    };
+                {
+                        MediaStore.Audio.Media._ID,
+                        MediaStore.Audio.Media.ALBUM
+                };
         String mSelectionClause = null;
         String[] mSelectionArgs = null;
-	//        mSelectionArgs[0] = "";
+        //        mSelectionArgs[0] = "";
         String mSortOrder = null;
         Log.i(TAG, "URI " + MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
         mCursor = getContentResolver().query(
-					     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-					     mProjection,
-					     mSelectionClause,
-					     mSelectionArgs,
-					     mSortOrder);
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                mProjection,
+                mSelectionClause,
+                mSelectionArgs,
+                mSortOrder);
         if (null == mCursor) {
         } else if (mCursor.getCount() < 1) {
         } else {
@@ -119,30 +119,30 @@ public class MainActivity extends AppCompatActivity {
             mSelectionArgs[0] = mSearchString;
         }
         String[] mProjection =
-	    {
-		UserDictionary.Words._ID,    // Contract class constant for the _ID column name
-		UserDictionary.Words.WORD,   // Contract class constant for the word column name
-		UserDictionary.Words.LOCALE  // Contract class constant for the locale column name
-	    };
+                {
+                        UserDictionary.Words._ID,    // Contract class constant for the _ID column name
+                        UserDictionary.Words.WORD,   // Contract class constant for the word column name
+                        UserDictionary.Words.LOCALE  // Contract class constant for the locale column name
+                };
         String mSortOrder = null;
         mCursor = getContentResolver().query(
-					     UserDictionary.Words.CONTENT_URI,  // The content URI of the words table
-					     mProjection,                       // The columns to return for each row
-					     mSelectionClause,                   // Either null, or the word the user entered
-					     mSelectionArgs,                    // Either empty, or the string the user entered
-					     mSortOrder);                       // The sort order for the returned rows
+                UserDictionary.Words.CONTENT_URI,  // The content URI of the words table
+                mProjection,                       // The columns to return for each row
+                mSelectionClause,                   // Either null, or the word the user entered
+                mSelectionArgs,                    // Either empty, or the string the user entered
+                mSortOrder);                       // The sort order for the returned rows
     }
 
     private void checkForPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-	    != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-								    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 //                        should show reason here
             } else {
                 ActivityCompat.requestPermissions(this,
-						  new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-						  MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
             }
         } else {
             chooseFile();
@@ -154,16 +154,16 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-	case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
-	    // If request is cancelled, the result arrays are empty.
-	    if (grantResults.length > 0
-		&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-		chooseFile();
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    chooseFile();
 
-	    } else {
-	    }
-	    return;
-	}
+                } else {
+                }
+                return;
+            }
         }
     }
 
@@ -173,27 +173,27 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, SELECTED_A_FILE);
 
         String[] projection = new String[]{
-	    MediaStore.Audio.AudioColumns.ALBUM,
-	    MediaStore.Audio.AudioColumns.TITLE};
+                MediaStore.Audio.AudioColumns.ALBUM,
+                MediaStore.Audio.AudioColumns.TITLE};
         Uri contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor cursor = getContentResolver().query(contentUri,
-						   projection, null, null, null);
+                projection, null, null, null);
         // Get the index of the columns we need.
         int albumIdx = cursor
-	    .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM);
+                .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM);
         int titleIdx = cursor
-	    .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.TITLE);
+                .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.TITLE);
         // Create an array to store the result set.
         String[] result = new String[cursor.getCount()];
         cursor.close();
     }
 
     private void persistSong(String title, Uri uri) {
-	Log.i(TAG, "title " + title);
-	SharedPreferences songsList = getPreferences(MODE_PRIVATE);
-	SharedPreferences.Editor editor = songsList.edit();
-	editor.putString(title, uri.toString());
-	editor.commit();
+        Log.i(TAG, "title " + title);
+        SharedPreferences songsList = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = songsList.edit();
+        editor.putString(title, uri.toString());
+        editor.commit();
     }
 
     @Override
@@ -205,17 +205,17 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Log.i(TAG, "Selected file " + data.getData());
                 playASong(data.getData());
-		String[] projection = new String[] {
-		    MediaStore.Audio.AudioColumns.TITLE};
-		Cursor cursor = getContentResolver().query(
-							   uri,
-							   projection,
-							   null,
-							   null,
-							   null);
-		while(cursor.moveToNext()) {
-		    persistSong(cursor.getString(0), uri);
-		}
+                String[] projection = new String[]{
+                        MediaStore.Audio.AudioColumns.TITLE};
+                Cursor cursor = getContentResolver().query(
+                        uri,
+                        projection,
+                        null,
+                        null,
+                        null);
+                while (cursor.moveToNext()) {
+                    persistSong(cursor.getString(0), uri);
+                }
             }
         }
     }
