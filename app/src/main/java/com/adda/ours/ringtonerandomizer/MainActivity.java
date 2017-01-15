@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -20,10 +22,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int SELECTED_A_FILE = 1;
     private Cursor mCursor;
@@ -32,34 +35,35 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //        code to choose files
-        mCursor = getMediaCursor();
+//        getMediaCursor();
 
-//        mCursor = getWordCursor();
-
-        if (null == mCursor) {
-        } else if (mCursor.getCount() < 1) {
-        } else {
-            int limit = 1;
-            while (mCursor.moveToNext() && limit > 0) {
-                Log.i(TAG, "title " + mCursor.getString(0));
-                Log.i(TAG, "album " + mCursor.getString(1));
-            }
-        }
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 checkForPermissions();
             }
         });
+    }
 
+    private void playRingtone() {
         Ringtone defaultRingtone = RingtoneManager.getRingtone(getApplicationContext(),
                 Settings.System.DEFAULT_RINGTONE_URI);
         defaultRingtone.play();
     }
 
-    private Cursor getMediaCursor() {
+    private void playASong(Uri uri) {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        try {
+            mediaPlayer.setDataSource(getApplicationContext(), uri);
+            mediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mediaPlayer.start();
+    }
 
+    private Cursor getMediaCursor() {
         String[] mProjection =
                 {
                         MediaStore.Audio.Media._ID,
@@ -76,6 +80,15 @@ public class MainActivity extends AppCompatActivity {
                 mSelectionClause,
                 mSelectionArgs,
                 mSortOrder);
+        if (null == mCursor) {
+        } else if (mCursor.getCount() < 1) {
+        } else {
+            int limit = 1;
+            while (mCursor.moveToNext() && limit > 0) {
+                Log.i(TAG, "title " + mCursor.getString(0));
+                Log.i(TAG, "album " + mCursor.getString(1));
+            }
+        }
         return mCursor;
     }
 
@@ -117,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                         MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
             }
         } else {
-            listMedia();
+            chooseFile();
         }
     }
 
@@ -130,23 +143,16 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    listMedia();
+                    chooseFile();
 
                 } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
         }
     }
 
-    private void listMedia() {
-
-        // permission was granted, yay! Do the
-        // contacts-related task you need to do.
-        //        test code for projection
+    private void chooseFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("audio/*");
         startActivityForResult(intent, SELECTED_A_FILE);
@@ -164,23 +170,6 @@ public class MainActivity extends AppCompatActivity {
                 .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.TITLE);
         // Create an array to store the result set.
         String[] result = new String[cursor.getCount()];
-    /*
-     * Iterate over the Cursor, extracting each album name and song
-	 * title.
-	 */
-        int limit = 2;
-        Log.i(TAG, "Total Count " + cursor.getCount());
-        while (cursor.moveToNext() && limit > 0) {
-            // Extract the song title.
-            String title = cursor.getString(titleIdx);
-            Log.i(TAG, "title " + title);
-            // Extract the album name.
-            String album = cursor.getString(albumIdx);
-            Log.i(TAG, "album " + album);
-            result[cursor.getPosition()] = title + " (" + album + ")";
-            // limit--;
-        }
-        // Close the Cursor.
         cursor.close();
     }
 
@@ -190,7 +179,8 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == SELECTED_A_FILE) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                Log.i(TAG, "Selected file " + data);
+                Log.i(TAG, "Selected file " + data.getData());
+                playASong(data.getData());
             }
         }
     }
