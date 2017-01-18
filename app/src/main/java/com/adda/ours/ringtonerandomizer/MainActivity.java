@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int SELECTED_A_FILE = 1;
     private Cursor mCursor;
     private ListView ringtonesList;
+    private ArrayAdapter<String> arrayAdapter;
 
     private static final String PREFS_NAME = "SongsList";
 
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
-
+        arrayAdapter = new ArrayAdapter<String>(this, R.layout.a_ringtone_layout);
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -61,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void listSavedTones() {
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, R.layout.a_ringtone_layout);
         SharedPreferences songsList = getPreferences(MODE_PRIVATE);
         Map<String, ?> songsKeyVal = songsList.getAll();
 
@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void persistSong(String title, Uri uri) {
         Log.i(TAG, "title " + title);
+        arrayAdapter.add(title);
         SharedPreferences songsList = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = songsList.edit();
         editor.putString(title, uri.toString());
@@ -217,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 Log.i(TAG, "Selected file " + data.getData());
-                playASong(data.getData());
+//                playASong(data.getData());
                 String[] projection = new String[]{
                         MediaStore.Audio.AudioColumns.TITLE};
                 Cursor cursor = getContentResolver().query(
