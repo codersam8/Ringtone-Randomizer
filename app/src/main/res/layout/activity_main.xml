@@ -10,17 +10,18 @@
 	      android:paddingTop="@dimen/activity_vertical_margin"
 	      tools:context="com.adda.ours.ringtonerandomizer.MainActivity">
 
-  <TextView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Hey Rockstar Sampath!" />
-
-  <TextView
+	<TextView
       android:id="@+id/ringtone_list"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/ringtone_list"/>
-  <Button android:id="@+id/add_tone"
+
+	<ListView
+		android:id="@+id/ringtones_list"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"></ListView>
+
+	<Button android:id="@+id/add_tone"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="@string/add_tone"/>

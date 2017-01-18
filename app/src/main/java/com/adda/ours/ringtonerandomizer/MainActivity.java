@@ -16,13 +16,19 @@ import android.provider.UserDictionary;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.ArrayMap;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.test.mock.MockContentResolver;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int SELECTED_A_FILE = 1;
     private Cursor mCursor;
+    private ListView ringtonesList;
 
     private static final String PREFS_NAME = "SongsList";
 
@@ -53,11 +60,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void listSavedTones() {
+        ringtonesList = (ListView) findViewById(R.id.ringtones_list);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, R.layout.a_ringtone_layout);
         SharedPreferences songsList = getPreferences(MODE_PRIVATE);
         Map<String, ?> songsKeyVal = songsList.getAll();
+
         for (Map.Entry<String, ?> entry : songsKeyVal.entrySet()) {
             Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
+            arrayAdapter.add(entry.getKey());
         }
+        arrayAdapter.add("hello handsome");
+        ringtonesList.setAdapter(arrayAdapter);
     }
 
     private void playRingtone() {
