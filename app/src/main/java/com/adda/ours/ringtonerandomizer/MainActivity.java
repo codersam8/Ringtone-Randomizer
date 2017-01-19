@@ -57,9 +57,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button randomizeTones = (Button) findViewById(R.id.randomize_tones);
+        randomizeTones.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startCallDetectService();
+            }
+        });
+        Button stop = (Button) findViewById(R.id.stop);
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopCallDetectService();
+            }
+        });
         listSavedTones();
     }
 
+    private void startCallDetectService() {
+        Intent intent = new Intent(this, CallDetectService.class);
+        startService(intent);
+    }
+
+    private void stopCallDetectService(){
+        Intent intent = new Intent(this, CallDetectService.class);
+        stopService(intent);
+    }
     private void listSavedTones() {
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         SharedPreferences songsList = getPreferences(MODE_PRIVATE);
@@ -69,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
             arrayAdapter.add(entry.getKey());
         }
-        arrayAdapter.add("hello handsome");
         ringtonesList.setAdapter(arrayAdapter);
     }
 
