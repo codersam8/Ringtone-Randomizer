@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.provider.UserDictionary;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
+    private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int SELECTED_A_FILE = 1;
     private static final String ON_STATE_TEXT = "Stop";
     private static final String OFF_STATE_TEXT = "Randomize Tones";
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
 
+        checkForWriteSettingsPermsn();
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
         RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setButtonText() {
-        if( appPrefs == null) {
+        if (appPrefs == null) {
             RandomizeTonesToggler.setText(OFF_STATE_TEXT);
             updatePrefs("buttonText", OFF_STATE_TEXT);
         } else {
@@ -97,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleCallDetectService() {
         Intent intent = new Intent(this, CallDetectService.class);
-        if(appPrefs.getString("buttonText", OFF_STATE_TEXT).equals(OFF_STATE_TEXT)) {
+        if (appPrefs.getString("buttonText", OFF_STATE_TEXT).equals(OFF_STATE_TEXT)) {
             startService(intent);
             RandomizeTonesToggler.setText(ON_STATE_TEXT);
             updatePrefs("buttonText", ON_STATE_TEXT);
@@ -108,10 +111,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void stopCallDetectService(){
+    private void stopCallDetectService() {
         Intent intent = new Intent(this, CallDetectService.class);
         stopService(intent);
     }
+
     private void listSavedTones() {
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         Map<String, ?> songsKeyVal = songsList.getAll();
@@ -212,6 +216,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void checkForWriteSettingsPermsn() {
+//        if(! Settings.System.canWrite(this)) {
+//            ActivityCompat.requestPermissions(this,
+//                    new String[] {Manifest.permission.WRITE_SETTINGS},
+//                    MY_PERMISSIONS_WRITE_SETTINGS);
+//        }
+        boolean permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            permission = Settings.System.canWrite(this);
+        } else {
+            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_SETTINGS) == PackageManager.PERMISSION_GRANTED;
+        }
+        if (permission) {
+            //do your code
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                intent.setData(Uri.parse("package:" + this.getPackageName()));
+                this.startActivityForResult(intent, MainActivity.MY_PERMISSIONS_WRITE_SETTINGS);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_SETTINGS}, MainActivity.MY_PERMISSIONS_WRITE_SETTINGS);
+            }
+        }
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -226,6 +255,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                 }
                 return;
+            }
+            case MY_PERMISSIONS_WRITE_SETTINGS: {
+
             }
         }
     }
@@ -261,8 +293,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        Uri uri = data.getData();
         if (requestCode == SELECTED_A_FILE) {
+            Uri uri = data.getData();
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 Log.i(TAG, "Selected file " + data.getData());
@@ -279,6 +311,8 @@ public class MainActivity extends AppCompatActivity {
                     persistSong(cursor.getString(0), uri);
                 }
             }
+        } else {
+
         }
     }
 }
