@@ -1,42 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	      xmlns:tools="http://schemas.android.com/tools"
-	      android:layout_width="match_parent"
-	      android:layout_height="match_parent"
-	      android:orientation="vertical"
-	      android:paddingBottom="@dimen/activity_vertical_margin"
-	      android:paddingLeft="@dimen/activity_horizontal_margin"
-	      android:paddingRight="@dimen/activity_horizontal_margin"
-	      android:paddingTop="@dimen/activity_vertical_margin"
-	      tools:context="com.adda.ours.ringtonerandomizer.MainActivity">
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content">
-		<Button
-			android:id="@+id/randomize_tones"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="Randomize tones"/>
-		<Button
-			android:id="@+id/stop"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="Stop"/>
-	</LinearLayout>
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.adda.ours.ringtonerandomizer.MainActivity">
 
-	<TextView
-      android:id="@+id/ringtone_list"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/ringtone_list"/>
+    <Button
+        android:id="@+id/toggle_randomizing_tones"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Randomize tones" />
 
-	<ListView
-		android:id="@+id/ringtones_list"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"></ListView>
+    <TextView
+        android:id="@+id/ringtone_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ringtone_list" />
 
-	<Button android:id="@+id/add_tone"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/add_tone"/>
+    <ListView
+        android:id="@+id/ringtones_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></ListView>
+
+    <Button
+        android:id="@+id/add_tone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_tone" />
 </LinearLayout>

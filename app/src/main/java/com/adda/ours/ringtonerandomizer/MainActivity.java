@@ -15,40 +15,56 @@ import android.provider.Settings;
 import android.provider.UserDictionary;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.ArrayMap;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.test.mock.MockContentResolver;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
-    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    private static final int SELECTED_A_FILE = 1;
     private Cursor mCursor;
     private ListView ringtonesList;
     private ArrayAdapter<String> arrayAdapter;
+    private Button RandomizeTonesToggler;
+    private SharedPreferences songsList;
+    private SharedPreferences.Editor sonsListEditor;
+    private SharedPreferences appPrefs;
+    private SharedPreferences.Editor appPrefsEditor;
 
-    private static final String PREFS_NAME = "SongsList";
+    private static final String TAG = "MainActivity";
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
+    private static final int SELECTED_A_FILE = 1;
+    private static final String ON_STATE_TEXT = "Stop";
+    private static final String OFF_STATE_TEXT = "Randomize Tones";
+    private static final String SONGS_LIST = "SongsList";
+    private static final String APP_PREFS = "AppPrefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
+
+        appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
+        appPrefsEditor = appPrefs.edit();
+        RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
+        setButtonText();
+        RandomizeTonesToggler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggleCallDetectService();
+            }
+        });
+
+        songsList = getSharedPreferences(SONGS_LIST, MODE_PRIVATE);
+        sonsListEditor = songsList.edit();
         arrayAdapter = new ArrayAdapter<String>(this, R.layout.a_ringtone_layout);
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
@@ -57,26 +73,39 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button randomizeTones = (Button) findViewById(R.id.randomize_tones);
-        randomizeTones.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startCallDetectService();
-            }
-        });
-        Button stop = (Button) findViewById(R.id.stop);
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopCallDetectService();
-            }
-        });
         listSavedTones();
     }
 
-    private void startCallDetectService() {
+    private void updateValues(String key, String value) {
+        sonsListEditor.putString(key, value);
+        sonsListEditor.commit();
+    }
+
+    private void setButtonText() {
+        if( appPrefs == null) {
+            RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            updatePrefs("buttonText", OFF_STATE_TEXT);
+        } else {
+            RandomizeTonesToggler.setText(appPrefs.getString("buttonText", OFF_STATE_TEXT));
+        }
+    }
+
+    private void updatePrefs(String key, String value) {
+        appPrefsEditor.putString(key, value);
+        appPrefsEditor.commit();
+    }
+
+    private void toggleCallDetectService() {
         Intent intent = new Intent(this, CallDetectService.class);
-        startService(intent);
+        if(appPrefs.getString("buttonText", OFF_STATE_TEXT).equals(OFF_STATE_TEXT)) {
+            startService(intent);
+            RandomizeTonesToggler.setText(ON_STATE_TEXT);
+            updatePrefs("buttonText", ON_STATE_TEXT);
+        } else {
+            stopService(intent);
+            RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            updatePrefs("buttonText", OFF_STATE_TEXT);
+        }
     }
 
     private void stopCallDetectService(){
@@ -85,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
     }
     private void listSavedTones() {
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
-        SharedPreferences songsList = getPreferences(MODE_PRIVATE);
         Map<String, ?> songsKeyVal = songsList.getAll();
 
         for (Map.Entry<String, ?> entry : songsKeyVal.entrySet()) {
@@ -226,10 +254,8 @@ public class MainActivity extends AppCompatActivity {
     private void persistSong(String title, Uri uri) {
         Log.i(TAG, "title " + title);
         arrayAdapter.add(title);
-        SharedPreferences songsList = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = songsList.edit();
-        editor.putString(title, uri.toString());
-        editor.commit();
+        sonsListEditor.putString(title, uri.toString());
+        sonsListEditor.commit();
     }
 
     @Override
