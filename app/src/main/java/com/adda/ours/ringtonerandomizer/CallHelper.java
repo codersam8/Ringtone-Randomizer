@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.Collection;
 import java.util.Map;
@@ -33,9 +32,6 @@ public class CallHelper {
                 case TelephonyManager.CALL_STATE_RINGING:
                     // called when someone is ringing to this phone
                     chooseARandomTone();
-                    Toast.makeText(ctx,
-                            "Incoming: " + incomingNumber,
-                            Toast.LENGTH_LONG).show();
                     break;
             }
         }

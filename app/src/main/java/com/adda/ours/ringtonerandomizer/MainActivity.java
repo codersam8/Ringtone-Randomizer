@@ -41,8 +41,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int SELECTED_A_FILE = 1;
+    private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
+    private static final int MY_PERMISSIONS_BOOT_COMPLETE = 3;
     private static final String ON_STATE_TEXT = "Stop";
     private static final String OFF_STATE_TEXT = "Randomize Tones";
     private static final String SONGS_LIST = "SongsList";
@@ -54,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
 
-        checkForWriteSettingsPermsn();
+        checkForBootReceiverPermsn();
+//        checkForWriteSettingsPermsn();
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
         RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
@@ -213,6 +215,16 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             chooseFile();
+        }
+    }
+
+    private void checkForBootReceiverPermsn() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_BOOT_COMPLETED) != PackageManager.PERMISSION_DENIED) {
+
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                    MY_PERMISSIONS_BOOT_COMPLETE);
         }
     }
 
