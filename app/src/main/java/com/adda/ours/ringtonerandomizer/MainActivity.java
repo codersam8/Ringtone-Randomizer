@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         //        getMediaCursor();
 
         checkForBootReceiverPermsn();
-//        checkForWriteSettingsPermsn();
+        checkForWriteSettingsPermsn();
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
         RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
@@ -78,7 +78,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button checkP = (Button) findViewById(R.id.check_permsns);
+        checkP.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                listPerms();
+            }
+        });
         listSavedTones();
+    }
+
+    private void listPerms() {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "We have boot receive");
+        } else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                Log.i(TAG, "We dont have a permsn");
+        }
     }
 
     private void updateValues(String key, String value) {
@@ -218,14 +232,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkForBootReceiverPermsn() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_BOOT_COMPLETED) != PackageManager.PERMISSION_DENIED) {
-
+     private void checkForBootReceiverPermsn() {
+        boolean permission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_BOOT_COMPLETED) == PackageManager.PERMISSION_GRANTED;
+        if (permission) {
+            //do your code
+            Log.i(TAG, "With permission");
         } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[] {Manifest.permission.RECEIVE_BOOT_COMPLETED},
-                    MY_PERMISSIONS_BOOT_COMPLETE);
-        }
+            Log.i(TAG, "No Permissions");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, MY_PERMISSIONS_BOOT_COMPLETE);
+            }
+        
     }
 
     private void checkForWriteSettingsPermsn() {
@@ -271,6 +287,11 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_WRITE_SETTINGS: {
 
             }
+            break;
+            case MY_PERMISSIONS_BOOT_COMPLETE: {
+                Log.i(TAG, "gott the permission");
+            }
+            break;
         }
     }
 
