@@ -78,21 +78,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button checkP = (Button) findViewById(R.id.check_permsns);
-        checkP.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                listPerms();
-            }
-        });
-        listSavedTones();
-    }
 
-    private void listPerms() {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "We have boot receive");
-        } else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                Log.i(TAG, "We dont have a permsn");
-        }
+        listSavedTones();
     }
 
     private void updateValues(String key, String value) {
