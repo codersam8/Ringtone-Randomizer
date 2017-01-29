@@ -14,6 +14,7 @@
         android:id="@+id/toggle_randomizing_tones"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Randomize tones" />
 
     <TextView
@@ -31,5 +32,6 @@
         android:id="@+id/add_tone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="@string/add_tone" />
 </LinearLayout>
