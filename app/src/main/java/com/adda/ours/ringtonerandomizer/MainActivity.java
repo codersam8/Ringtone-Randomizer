@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Map;
@@ -285,11 +286,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void persistSong(String title, Uri uri) {
         Log.i(TAG, "title " + title);
-        arrayAdapter.add(title);
-        sonsListEditor.putString(title, uri.toString());
-        sonsListEditor.commit();
+        if(wasSongAlreadyAdded(title)) {
+            Toast.makeText(this, "Tone already exists!", Toast.LENGTH_SHORT).show();
+        } else {
+            arrayAdapter.add(title);
+            sonsListEditor.putString(title, uri.toString());
+            sonsListEditor.commit();
+        }
     }
 
+    private boolean wasSongAlreadyAdded(String title) {
+        return songsList.contains(title);
+    }
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
