@@ -21,7 +21,10 @@
         android:id="@+id/ringtone_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/ringtone_list" />
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="@string/ringtone_list"
+        android:padding="8dp"/>
 
     <ListView
         android:id="@+id/ringtones_list"
@@ -33,5 +36,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/add_tone" />
+        android:text="@string/add_tone"
+        />
 </LinearLayout>
