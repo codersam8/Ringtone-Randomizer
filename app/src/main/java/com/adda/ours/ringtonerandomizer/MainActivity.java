@@ -294,9 +294,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
         if (requestCode == SELECTED_A_FILE) {
-            Uri uri = data.getData();
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
+                Uri uri = data.getData();
                 Log.i(TAG, "Selected file " + data.getData());
 //                playASong(data.getData());
                 String[] projection = new String[]{
