@@ -1,6 +1,7 @@
 package com.adda.ours.ringtonerandomizer;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -20,20 +21,28 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
     private Cursor mCursor;
     private ListView ringtonesList;
-    private ArrayAdapter<String> arrayAdapter;
+    private SelectionAdapter arrayAdapter;
     private Button RandomizeTonesToggler;
     private SharedPreferences songsList;
     private SharedPreferences.Editor sonsListEditor;
@@ -56,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         //        getMediaCursor();
 
         checkForWriteSettingsPermsn();
+        ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
         RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
@@ -69,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
         songsList = getSharedPreferences(SONGS_LIST, MODE_PRIVATE);
         sonsListEditor = songsList.edit();
-        arrayAdapter = new ArrayAdapter<String>(this, R.layout.a_ringtone_layout);
+        arrayAdapter = new SelectionAdapter(this, R.layout.a_ringtone_layout);
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -78,6 +88,52 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listSavedTones();
+        ringtonesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        ringtonesList.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position,
+                                                  long id, boolean checked) {
+                if (checked) {
+                    arrayAdapter.setNewSelection(position, checked);
+                } else {
+                    arrayAdapter.removeSelection(position);
+                }
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                // Respond to clicks on the actions in the CAB
+                switch (item.getItemId()) {
+                    case R.id.delete_tones:
+//                        deleteSelectedItems();
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate the menu for the CAB
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.context_menu_delete, menu);
+                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                arrayAdapter.clearSelection();
+                // Here you can make any necessary updates to the activity when
+                // the CAB is removed. By default, selected items are deselected/unchecked.
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+        });
     }
 
     private void updateValues(String key, String value) {
@@ -118,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void listSavedTones() {
-        ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         Map<String, ?> songsKeyVal = songsList.getAll();
 
         for (Map.Entry<String, ?> entry : songsKeyVal.entrySet()) {
@@ -286,6 +341,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void persistSong(String title, Uri uri) {
         Log.i(TAG, "title " + title);
+//        TODO: solve this properly
+        if(title == null) {
+            return;
+        }
         if(wasSongAlreadyAdded(title)) {
             Toast.makeText(this, "Tone already exists!", Toast.LENGTH_SHORT).show();
         } else {
@@ -322,6 +381,50 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
 
+        }
+    }
+
+    private class SelectionAdapter extends ArrayAdapter<String> {
+
+        private HashMap<Integer, Boolean> mSelection = new HashMap<Integer, Boolean>();
+
+        public SelectionAdapter(Context context, int resource) {
+            super(context, resource);
+        }
+
+        public void setNewSelection(int position, boolean value) {
+            mSelection.put(position, value);
+            notifyDataSetChanged();
+        }
+
+        public boolean isPositionChecked(int position) {
+            Boolean result = mSelection.get(position);
+            return result == null ? false : result;
+        }
+
+        public Set<Integer> getCurrentCheckedPosition() {
+            return mSelection.keySet();
+        }
+
+        public void removeSelection(int position) {
+            mSelection.remove(position);
+            notifyDataSetChanged();
+        }
+
+        public void clearSelection() {
+            mSelection = new HashMap<Integer, Boolean>();
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = super.getView(position, convertView, parent);//let the adapter handle setting up the row views
+            v.setBackgroundColor(getResources().getColor(android.R.color.background_light)); //default color
+
+            if (mSelection.get(position) != null) {
+                v.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));// this is a selected position so make it red
+            }
+            return v;
         }
     }
 }
