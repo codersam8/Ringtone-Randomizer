@@ -15,6 +15,7 @@ import android.os.Build;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.provider.UserDictionary;
+import android.support.annotation.IntegerRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +36,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 // Respond to clicks on the actions in the CAB
                 switch (item.getItemId()) {
                     case R.id.delete_tones:
-//                        deleteSelectedItems();
+                        arrayAdapter.deleteSelectedItems();
                         mode.finish(); // Action picked, so close the CAB
                         return true;
                     default:
@@ -134,6 +136,9 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private void deleteSongs() {
     }
 
     private void updateValues(String key, String value) {
@@ -390,6 +395,21 @@ public class MainActivity extends AppCompatActivity {
 
         public SelectionAdapter(Context context, int resource) {
             super(context, resource);
+        }
+
+        public void deleteSelectedItems() {
+            Iterator it = mSelection.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry keyVal = (Map.Entry) it.next();
+                if((Boolean)keyVal.getValue() == true) {
+                    String title = getItem((Integer)keyVal.getKey());
+                    arrayAdapter.remove(title);
+                    sonsListEditor.remove(title);
+                    Log.i(TAG, title);
+                }
+            }
+            sonsListEditor.commit();
+            notifyDataSetChanged();
         }
 
         public void setNewSelection(int position, boolean value) {
