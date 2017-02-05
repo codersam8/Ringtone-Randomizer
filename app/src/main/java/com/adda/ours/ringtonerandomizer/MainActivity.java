@@ -230,32 +230,6 @@ public class MainActivity extends AppCompatActivity {
         return mCursor;
     }
 
-    private void getWordCursor() {
-        String[] mSelectionArgs = {""};
-        String mSearchString = "";
-        String mSelectionClause = null;
-        if (TextUtils.isEmpty(mSearchString)) {
-            mSelectionClause = null;
-            mSelectionArgs[0] = "";
-        } else {
-            mSelectionClause = UserDictionary.Words.WORD + " = ?";
-            mSelectionArgs[0] = mSearchString;
-        }
-        String[] mProjection =
-                {
-                        UserDictionary.Words._ID,    // Contract class constant for the _ID column name
-                        UserDictionary.Words.WORD,   // Contract class constant for the word column name
-                        UserDictionary.Words.LOCALE  // Contract class constant for the locale column name
-                };
-        String mSortOrder = null;
-        mCursor = getContentResolver().query(
-                UserDictionary.Words.CONTENT_URI,  // The content URI of the words table
-                mProjection,                       // The columns to return for each row
-                mSelectionClause,                   // Either null, or the word the user entered
-                mSelectionArgs,                    // Either empty, or the string the user entered
-                mSortOrder);                       // The sort order for the returned rows
-    }
-
     private void checkForPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -322,21 +296,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("audio/*");
         startActivityForResult(intent, SELECTED_A_FILE);
-
-        String[] projection = new String[]{
-                MediaStore.Audio.AudioColumns.ALBUM,
-                MediaStore.Audio.AudioColumns.TITLE};
-        Uri contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor cursor = getContentResolver().query(contentUri,
-                projection, null, null, null);
-        // Get the index of the columns we need.
-        int albumIdx = cursor
-                .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM);
-        int titleIdx = cursor
-                .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.TITLE);
-        // Create an array to store the result set.
-        String[] result = new String[cursor.getCount()];
-        cursor.close();
     }
 
     private void persistSong(String title, Uri uri) {
@@ -371,12 +330,14 @@ public class MainActivity extends AppCompatActivity {
                         MediaStore.Audio.AudioColumns.TITLE};
                 Cursor cursor = getContentResolver().query(
                         uri,
-                        projection,
+                        null,
                         null,
                         null,
                         null);
                 while (cursor.moveToNext()) {
                     persistSong(cursor.getString(0), uri);
+                    String[] allColumns = cursor.getColumnNames();
+                    Log.i(TAG, allColumns.toString());
                 }
             }
         } else {
