@@ -12,7 +12,9 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.DocumentsProvider;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.provider.UserDictionary;
 import android.support.v4.app.ActivityCompat;
@@ -34,6 +36,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -326,8 +329,6 @@ public class MainActivity extends AppCompatActivity {
                 Uri uri = data.getData();
                 Log.i(TAG, "Selected file " + data.getData());
 //                playASong(data.getData());
-                String[] projection = new String[]{
-                        MediaStore.Audio.AudioColumns.TITLE};
                 Cursor cursor = getContentResolver().query(
                         uri,
                         null,
@@ -335,9 +336,14 @@ public class MainActivity extends AppCompatActivity {
                         null,
                         null);
                 while (cursor.moveToNext()) {
-                    persistSong(cursor.getString(0), uri);
                     String[] allColumns = cursor.getColumnNames();
+                    if(Arrays.asList(allColumns).contains(MediaStore.Audio.AudioColumns.TITLE)) {
+                        persistSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)), uri);
+                    } else {
+                        persistSong(cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)), uri);
+                    }
                     Log.i(TAG, allColumns.toString());
+
                 }
             }
         } else {
