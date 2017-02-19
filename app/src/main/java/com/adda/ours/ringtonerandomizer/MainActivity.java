@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int SELECTED_A_FILE = 1;
-    private static final String ON_STATE_TEXT = "Stop";
-    private static final String OFF_STATE_TEXT = "Randomize Tones";
+    private static final String ON_STATE_TEXT = "STOP RANDOMIZING";
+    private static final String OFF_STATE_TEXT = "START RANDOMIZING";
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
 
