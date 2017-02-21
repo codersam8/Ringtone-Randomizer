@@ -58,8 +58,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int SELECTED_A_FILE = 1;
-    private static final String ON_STATE_TEXT = "STOP RANDOMIZING";
-    private static final String OFF_STATE_TEXT = "START RANDOMIZING";
+    private static final String ON_STATE_TEXT = "STOP RANDOMIZE";
+    private static final String OFF_STATE_TEXT = "RANDOMIZE";
+    private static final int ON_STATE_COLOR = R.color.red;
+    private static final int OFF_STATE_COLOR = R.color.green;
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
 
@@ -152,9 +154,11 @@ public class MainActivity extends AppCompatActivity {
     private void setButtonText() {
         if (appPrefs == null) {
             RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
             updatePrefs("buttonText", OFF_STATE_TEXT);
         } else {
             RandomizeTonesToggler.setText(appPrefs.getString("buttonText", OFF_STATE_TEXT));
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
         }
     }
 
@@ -168,10 +172,12 @@ public class MainActivity extends AppCompatActivity {
         if (appPrefs.getString("buttonText", OFF_STATE_TEXT).equals(OFF_STATE_TEXT)) {
             startService(intent);
             RandomizeTonesToggler.setText(ON_STATE_TEXT);
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, ON_STATE_COLOR));
             updatePrefs("buttonText", ON_STATE_TEXT);
         } else {
             stopService(intent);
             RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
             updatePrefs("buttonText", OFF_STATE_TEXT);
         }
     }
@@ -357,11 +363,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class SelectionAdapter extends ArrayAdapter<String> {
+        private Context context;
 
         private HashMap<Integer, Boolean> mSelection = new HashMap<Integer, Boolean>();
 
         public SelectionAdapter(Context context, int resource) {
+
             super(context, resource);
+            this.context = context;
         }
 
         public void deleteSelectedItems() {
@@ -406,10 +415,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = super.getView(position, convertView, parent);//let the adapter handle setting up the row views
-            v.setBackgroundColor(getResources().getColor(android.R.color.background_light)); //default color
+            v.setBackgroundColor(ContextCompat.getColor(context,android.R.color.white)); //default color
 
             if (mSelection.get(position) != null) {
-                v.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));// this is a selected position so make it red
+                v.setBackgroundColor(ContextCompat.getColor(context,android.R.color.holo_blue_light));// this is a selected position so make it red
             }
             return v;
         }
