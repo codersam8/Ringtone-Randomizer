@@ -33,9 +33,6 @@ public class CallHelper {
                 case TelephonyManager.CALL_STATE_RINGING:
                     // called when someone is ringing to this phone
                     chooseARandomTone();
-                    Toast.makeText(ctx,
-                            "Incoming: " + incomingNumber,
-                            Toast.LENGTH_LONG).show();
                     break;
             }
         }
