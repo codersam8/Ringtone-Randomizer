@@ -1,6 +1,7 @@
 package com.adda.ours.ringtonerandomizer;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,28 +12,42 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.DocumentsProvider;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.provider.UserDictionary;
+import android.support.annotation.IntegerRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
     private Cursor mCursor;
     private ListView ringtonesList;
-    private ArrayAdapter<String> arrayAdapter;
+    private SelectionAdapter arrayAdapter;
     private Button RandomizeTonesToggler;
     private SharedPreferences songsList;
     private SharedPreferences.Editor sonsListEditor;
@@ -44,8 +59,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int SELECTED_A_FILE = 1;
     private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int MY_PERMISSIONS_BOOT_COMPLETE = 3;
-    private static final String ON_STATE_TEXT = "Stop";
-    private static final String OFF_STATE_TEXT = "Randomize Tones";
+    private static final String ON_STATE_TEXT = "STOP RANDOMIZE";
+    private static final String OFF_STATE_TEXT = "RANDOMIZE";
+    private static final int ON_STATE_COLOR = R.color.red;
+    private static final int OFF_STATE_COLOR = R.color.green;
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
 
@@ -57,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         checkForBootReceiverPermsn();
         checkForWriteSettingsPermsn();
+        ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
         RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
@@ -70,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         songsList = getSharedPreferences(SONGS_LIST, MODE_PRIVATE);
         sonsListEditor = songsList.edit();
-        arrayAdapter = new ArrayAdapter<String>(this, R.layout.a_ringtone_layout);
+        arrayAdapter = new SelectionAdapter(this, R.layout.a_ringtone_layout);
         Button addTone = (Button) findViewById(R.id.add_tone);
         addTone.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -80,6 +98,55 @@ public class MainActivity extends AppCompatActivity {
 
 
         listSavedTones();
+        ringtonesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        ringtonesList.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position,
+                                                  long id, boolean checked) {
+                if (checked) {
+                    arrayAdapter.setNewSelection(position, checked);
+                } else {
+                    arrayAdapter.removeSelection(position);
+                }
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                // Respond to clicks on the actions in the CAB
+                switch (item.getItemId()) {
+                    case R.id.delete_tones:
+                        arrayAdapter.deleteSelectedItems();
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate the menu for the CAB
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.context_menu_delete, menu);
+                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                arrayAdapter.clearSelection();
+                // Here you can make any necessary updates to the activity when
+                // the CAB is removed. By default, selected items are deselected/unchecked.
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+        });
+    }
+
+    private void deleteSongs() {
     }
 
     private void updateValues(String key, String value) {
@@ -90,9 +157,11 @@ public class MainActivity extends AppCompatActivity {
     private void setButtonText() {
         if (appPrefs == null) {
             RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
             updatePrefs("buttonText", OFF_STATE_TEXT);
         } else {
             RandomizeTonesToggler.setText(appPrefs.getString("buttonText", OFF_STATE_TEXT));
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
         }
     }
 
@@ -106,10 +175,12 @@ public class MainActivity extends AppCompatActivity {
         if (appPrefs.getString("buttonText", OFF_STATE_TEXT).equals(OFF_STATE_TEXT)) {
             startService(intent);
             RandomizeTonesToggler.setText(ON_STATE_TEXT);
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, ON_STATE_COLOR));
             updatePrefs("buttonText", ON_STATE_TEXT);
         } else {
             stopService(intent);
             RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
             updatePrefs("buttonText", OFF_STATE_TEXT);
         }
     }
@@ -120,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void listSavedTones() {
-        ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         Map<String, ?> songsKeyVal = songsList.getAll();
 
         for (Map.Entry<String, ?> entry : songsKeyVal.entrySet()) {
@@ -175,32 +245,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return mCursor;
-    }
-
-    private void getWordCursor() {
-        String[] mSelectionArgs = {""};
-        String mSearchString = "";
-        String mSelectionClause = null;
-        if (TextUtils.isEmpty(mSearchString)) {
-            mSelectionClause = null;
-            mSelectionArgs[0] = "";
-        } else {
-            mSelectionClause = UserDictionary.Words.WORD + " = ?";
-            mSelectionArgs[0] = mSearchString;
-        }
-        String[] mProjection =
-                {
-                        UserDictionary.Words._ID,    // Contract class constant for the _ID column name
-                        UserDictionary.Words.WORD,   // Contract class constant for the word column name
-                        UserDictionary.Words.LOCALE  // Contract class constant for the locale column name
-                };
-        String mSortOrder = null;
-        mCursor = getContentResolver().query(
-                UserDictionary.Words.CONTENT_URI,  // The content URI of the words table
-                mProjection,                       // The columns to return for each row
-                mSelectionClause,                   // Either null, or the word the user entered
-                mSelectionArgs,                    // Either empty, or the string the user entered
-                mSortOrder);                       // The sort order for the returned rows
     }
 
     private void checkForPermissions() {
@@ -286,53 +330,117 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("audio/*");
         startActivityForResult(intent, SELECTED_A_FILE);
-
-        String[] projection = new String[]{
-                MediaStore.Audio.AudioColumns.ALBUM,
-                MediaStore.Audio.AudioColumns.TITLE};
-        Uri contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor cursor = getContentResolver().query(contentUri,
-                projection, null, null, null);
-        // Get the index of the columns we need.
-        int albumIdx = cursor
-                .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM);
-        int titleIdx = cursor
-                .getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.TITLE);
-        // Create an array to store the result set.
-        String[] result = new String[cursor.getCount()];
-        cursor.close();
     }
 
     private void persistSong(String title, Uri uri) {
         Log.i(TAG, "title " + title);
-        arrayAdapter.add(title);
-        sonsListEditor.putString(title, uri.toString());
-        sonsListEditor.commit();
+//        TODO: solve this properly
+        if(title == null) {
+            return;
+        }
+        if(wasSongAlreadyAdded(title)) {
+            Toast.makeText(this, "Tone already exists!", Toast.LENGTH_SHORT).show();
+        } else {
+            arrayAdapter.add(title);
+            sonsListEditor.putString(title, uri.toString());
+            sonsListEditor.commit();
+        }
     }
 
+    private boolean wasSongAlreadyAdded(String title) {
+        return songsList.contains(title);
+    }
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
         if (requestCode == SELECTED_A_FILE) {
-            Uri uri = data.getData();
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
+                Uri uri = data.getData();
                 Log.i(TAG, "Selected file " + data.getData());
 //                playASong(data.getData());
-                String[] projection = new String[]{
-                        MediaStore.Audio.AudioColumns.TITLE};
                 Cursor cursor = getContentResolver().query(
                         uri,
-                        projection,
+                        null,
                         null,
                         null,
                         null);
                 while (cursor.moveToNext()) {
-                    persistSong(cursor.getString(0), uri);
+                    String[] allColumns = cursor.getColumnNames();
+                    if(Arrays.asList(allColumns).contains(MediaStore.Audio.AudioColumns.TITLE)) {
+                        persistSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)), uri);
+                    } else {
+                        persistSong(cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)), uri);
+                    }
+                    Log.i(TAG, allColumns.toString());
+
                 }
             }
         } else {
 
+        }
+    }
+
+    private class SelectionAdapter extends ArrayAdapter<String> {
+        private Context context;
+
+        private HashMap<Integer, Boolean> mSelection = new HashMap<Integer, Boolean>();
+
+        public SelectionAdapter(Context context, int resource) {
+
+            super(context, resource);
+            this.context = context;
+        }
+
+        public void deleteSelectedItems() {
+            Iterator it = mSelection.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry keyVal = (Map.Entry) it.next();
+                if((Boolean)keyVal.getValue() == true) {
+                    String title = getItem((Integer)keyVal.getKey());
+                    arrayAdapter.remove(title);
+                    sonsListEditor.remove(title);
+                    Log.i(TAG, title);
+                }
+            }
+            sonsListEditor.commit();
+            notifyDataSetChanged();
+        }
+
+        public void setNewSelection(int position, boolean value) {
+            mSelection.put(position, value);
+            notifyDataSetChanged();
+        }
+
+        public boolean isPositionChecked(int position) {
+            Boolean result = mSelection.get(position);
+            return result == null ? false : result;
+        }
+
+        public Set<Integer> getCurrentCheckedPosition() {
+            return mSelection.keySet();
+        }
+
+        public void removeSelection(int position) {
+            mSelection.remove(position);
+            notifyDataSetChanged();
+        }
+
+        public void clearSelection() {
+            mSelection = new HashMap<Integer, Boolean>();
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = super.getView(position, convertView, parent);//let the adapter handle setting up the row views
+            v.setBackgroundColor(ContextCompat.getColor(context,android.R.color.white)); //default color
+
+            if (mSelection.get(position) != null) {
+                v.setBackgroundColor(ContextCompat.getColor(context,android.R.color.holo_blue_light));// this is a selected position so make it red
+            }
+            return v;
         }
     }
 }

@@ -8,28 +8,49 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@color/white"
     tools:context="com.adda.ours.ringtonerandomizer.MainActivity">
 
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:weightSum="2">
     <Button
         android:id="@+id/toggle_randomizing_tones"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:layout_margin="2dp"
         android:text="Randomize tones" />
 
+    <Button
+        android:id="@+id/add_tone"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:text="@string/add_tone"
+        android:layout_margin="2dp"
+        android:background="@color/blue"
+        />
+  </LinearLayout>
+
+    
     <TextView
         android:id="@+id/ringtone_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/ringtone_list" />
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="@string/ringtone_list"
+        android:padding="8dp"/>
 
     <ListView
         android:id="@+id/ringtones_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"></ListView>
 
-    <Button
-        android:id="@+id/add_tone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/add_tone" />
+
 </LinearLayout>
