@@ -59,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int SELECTED_A_FILE = 1;
     private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int MY_PERMISSIONS_BOOT_COMPLETE = 3;
-    private static final int ON_STATE_COLOR = R.color.red;
-    private static final int OFF_STATE_COLOR = R.color.green;
+
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
 
@@ -155,11 +154,11 @@ public class MainActivity extends AppCompatActivity {
     private void setButtonText() {
         if (appPrefs == null) {
             RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
             updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
         } else {
             RandomizeTonesToggler.setText(appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT));
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
         }
     }
 
@@ -173,12 +172,12 @@ public class MainActivity extends AppCompatActivity {
         if (appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT).equals(RRConstants.OFF_STATE_TEXT)) {
             startService(intent);
             RandomizeTonesToggler.setText(RRConstants.ON_STATE_TEXT);
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, ON_STATE_COLOR));
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.ON_STATE_COLOR));
             updatePrefs("buttonText", RRConstants.ON_STATE_TEXT);
         } else {
             stopService(intent);
             RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
+            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
             updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
         }
     }
