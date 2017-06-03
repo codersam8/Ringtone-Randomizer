@@ -45,9 +45,14 @@ public class CallHelper {
 //        for(String song: songListArr) {
 //            Log.i(TAG, song);
 //        }
+        Uri ringToneUri = null;
+        do {
+            ringToneUri = Uri.parse(songListArr[new Random().nextInt(songListArr.length)]);
+        } while (RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE) == ringToneUri);
+
         RingtoneManager.setActualDefaultRingtoneUri(ctx,
                 RingtoneManager.TYPE_RINGTONE,
-                Uri.parse(songListArr[new Random().nextInt(songListArr.length)]));
+                ringToneUrigit );
     }
     private SharedPreferences songsList;
     private Context ctx;
