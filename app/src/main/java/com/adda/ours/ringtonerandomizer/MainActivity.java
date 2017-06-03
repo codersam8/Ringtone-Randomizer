@@ -56,10 +56,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
     private static final int SELECTED_A_FILE = 1;
-    private static final String ON_STATE_TEXT = "STOP RANDOMIZE";
-    private static final String OFF_STATE_TEXT = "RANDOMIZE";
+    private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
+    private static final int MY_PERMISSIONS_BOOT_COMPLETE = 3;
     private static final int ON_STATE_COLOR = R.color.red;
     private static final int OFF_STATE_COLOR = R.color.green;
     private static final String SONGS_LIST = "SongsList";
@@ -71,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
 
+        checkForBootReceiverPermsn();
         checkForWriteSettingsPermsn();
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 checkForPermissions();
             }
         });
+
 
         listSavedTones();
         ringtonesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -153,11 +154,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void setButtonText() {
         if (appPrefs == null) {
-            RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
             RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
-            updatePrefs("buttonText", OFF_STATE_TEXT);
+            updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
         } else {
-            RandomizeTonesToggler.setText(appPrefs.getString("buttonText", OFF_STATE_TEXT));
+            RandomizeTonesToggler.setText(appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT));
             RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
         }
     }
@@ -169,16 +170,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleCallDetectService() {
         Intent intent = new Intent(this, CallDetectService.class);
-        if (appPrefs.getString("buttonText", OFF_STATE_TEXT).equals(OFF_STATE_TEXT)) {
+        if (appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT).equals(RRConstants.OFF_STATE_TEXT)) {
             startService(intent);
-            RandomizeTonesToggler.setText(ON_STATE_TEXT);
+            RandomizeTonesToggler.setText(RRConstants.ON_STATE_TEXT);
             RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, ON_STATE_COLOR));
-            updatePrefs("buttonText", ON_STATE_TEXT);
+            updatePrefs("buttonText", RRConstants.ON_STATE_TEXT);
         } else {
             stopService(intent);
-            RandomizeTonesToggler.setText(OFF_STATE_TEXT);
+            RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
             RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, OFF_STATE_COLOR));
-            updatePrefs("buttonText", OFF_STATE_TEXT);
+            updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
         }
     }
 
@@ -260,6 +261,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+     private void checkForBootReceiverPermsn() {
+        boolean permission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_BOOT_COMPLETED) == PackageManager.PERMISSION_GRANTED;
+        if (permission) {
+            //do your code
+            Log.i(TAG, "With permission");
+        } else {
+            Log.i(TAG, "No Permissions");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, MY_PERMISSIONS_BOOT_COMPLETE);
+            }
+        
+    }
+
     private void checkForWriteSettingsPermsn() {
 //        if(! Settings.System.canWrite(this)) {
 //            ActivityCompat.requestPermissions(this,
@@ -303,6 +316,11 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_WRITE_SETTINGS: {
 
             }
+            break;
+            case MY_PERMISSIONS_BOOT_COMPLETE: {
+                Log.i(TAG, "gott the permission");
+            }
+            break;
         }
     }
 
