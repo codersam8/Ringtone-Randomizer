@@ -12,17 +12,13 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.DocumentsProvider;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
-import android.provider.UserDictionary;
-import android.support.annotation.IntegerRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -75,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
         RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
-        setButtonText();
+        setButtonTextAndColor();
         RandomizeTonesToggler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -151,14 +147,19 @@ public class MainActivity extends AppCompatActivity {
         sonsListEditor.commit();
     }
 
-    private void setButtonText() {
+    private void setButtonTextAndColor() {
         if (appPrefs == null) {
             RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
             RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
             updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
         } else {
-            RandomizeTonesToggler.setText(appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT));
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
+            String buttonText = appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT);
+            RandomizeTonesToggler.setText(buttonText);
+            if(buttonText.equals(RRConstants.OFF_STATE_TEXT)) {
+                RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
+            } else {
+                RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.ON_STATE_COLOR));
+            }
         }
     }
 
