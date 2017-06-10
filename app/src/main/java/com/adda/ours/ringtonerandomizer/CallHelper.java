@@ -49,7 +49,7 @@ public class CallHelper {
         do {
             ringToneUri = Uri.parse(songListArr[new Random().nextInt(songListArr.length)]);
         } while (RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE).equals(ringToneUri));
-
+        Log.i(TAG, "Selected tone is " + ringToneUri);
         RingtoneManager.setActualDefaultRingtoneUri(ctx,
                 RingtoneManager.TYPE_RINGTONE,
                 ringToneUri);
