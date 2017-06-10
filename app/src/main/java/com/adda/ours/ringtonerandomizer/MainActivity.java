@@ -64,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
-
-        checkForBootReceiverPermsn();
+        
         checkForWriteSettingsPermsn();
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
