@@ -58,14 +58,14 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
+    private static boolean isWriteSettingsPermsnGranted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //        getMediaCursor();
-        
-        checkForWriteSettingsPermsn();
+
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
@@ -74,7 +74,11 @@ public class MainActivity extends AppCompatActivity {
         RandomizeTonesToggler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toggleCallDetectService();
+                if(isWriteSettingsPermsnGranted) {
+                    toggleCallDetectService();
+                } else {
+                    checkForWriteSettingsPermsn();
+                }
             }
         });
 
@@ -260,17 +264,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-     private void checkForBootReceiverPermsn() {
-        boolean permission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_BOOT_COMPLETED) == PackageManager.PERMISSION_GRANTED;
-        if (permission) {
-            //do your code
-            Log.i(TAG, "With permission");
-        } else {
-            Log.i(TAG, "No Permissions");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, MY_PERMISSIONS_BOOT_COMPLETE);
-            }
-        
-    }
 
     private void checkForWriteSettingsPermsn() {
 //        if(! Settings.System.canWrite(this)) {
@@ -292,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.setData(Uri.parse("package:" + this.getPackageName()));
                 this.startActivityForResult(intent, MainActivity.MY_PERMISSIONS_WRITE_SETTINGS);
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_SETTINGS}, MainActivity.MY_PERMISSIONS_WRITE_SETTINGS);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_SETTINGS}, MY_PERMISSIONS_WRITE_SETTINGS);
             }
         }
     }
@@ -301,6 +294,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode,
+                permissions,
+                grantResults);
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
@@ -313,7 +309,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             case MY_PERMISSIONS_WRITE_SETTINGS: {
-
+                isWriteSettingsPermsnGranted = true;
+                toggleCallDetectService();
             }
             break;
             case MY_PERMISSIONS_BOOT_COMPLETE: {
@@ -351,31 +348,36 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        if (requestCode == SELECTED_A_FILE) {
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                Uri uri = data.getData();
-                Log.i(TAG, "Selected file " + data.getData());
+        switch (requestCode) {
+            case SELECTED_A_FILE:
+                if (resultCode == RESULT_OK) {
+                    Uri uri = data.getData();
+                    Log.i(TAG, "Selected file " + data.getData());
 //                playASong(data.getData());
-                Cursor cursor = getContentResolver().query(
-                        uri,
-                        null,
-                        null,
-                        null,
-                        null);
-                while (cursor.moveToNext()) {
-                    String[] allColumns = cursor.getColumnNames();
-                    if(Arrays.asList(allColumns).contains(MediaStore.Audio.AudioColumns.TITLE)) {
-                        persistSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)), uri);
-                    } else {
-                        persistSong(cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)), uri);
+                    Cursor cursor = getContentResolver().query(
+                            uri,
+                            null,
+                            null,
+                            null,
+                            null);
+                    while (cursor.moveToNext()) {
+                        String[] allColumns = cursor.getColumnNames();
+                        if(Arrays.asList(allColumns).contains(MediaStore.Audio.AudioColumns.TITLE)) {
+                            persistSong(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)), uri);
+                        } else {
+                            persistSong(cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)), uri);
+                        }
+                        Log.i(TAG, allColumns.toString());
+
                     }
-                    Log.i(TAG, allColumns.toString());
-
                 }
-            }
-        } else {
-
+                break;
+            case MY_PERMISSIONS_WRITE_SETTINGS:
+                if (Settings.System.canWrite(this)) {
+                    isWriteSettingsPermsnGranted = true;
+                    toggleCallDetectService();
+                }
+                break;
         }
     }
 
