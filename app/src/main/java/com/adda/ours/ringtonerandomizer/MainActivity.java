@@ -6,10 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -32,7 +28,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,10 +36,9 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Cursor mCursor;
     private ListView ringtonesList;
     private SelectionAdapter arrayAdapter;
-    private Button RandomizeTonesToggler;
+    private Button randomizeTonesToggler;
     private SharedPreferences songsList;
     private SharedPreferences.Editor sonsListEditor;
     private SharedPreferences appPrefs;
@@ -58,20 +52,20 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
+    private static final String BUTTON_TEXT = "buttonText";
     private static boolean isWriteSettingsPermsnGranted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //        getMediaCursor();
 
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
-        RandomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
+        randomizeTonesToggler = (Button) findViewById(R.id.toggle_randomizing_tones);
         setButtonTextAndColor();
-        RandomizeTonesToggler.setOnClickListener(new View.OnClickListener() {
+        randomizeTonesToggler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(isWriteSettingsPermsnGranted) {
@@ -142,26 +136,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void deleteSongs() {
-    }
-
-    private void updateValues(String key, String value) {
-        sonsListEditor.putString(key, value);
-        sonsListEditor.commit();
-    }
+//    private void updateValues(String key, String value) {
+//        sonsListEditor.putString(key, value);
+//        sonsListEditor.commit();
+//    }
 
     private void setButtonTextAndColor() {
         if (appPrefs == null) {
-            RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
-            updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
+            randomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
+            randomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
+            updatePrefs(BUTTON_TEXT, RRConstants.OFF_STATE_TEXT);
         } else {
-            String buttonText = appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT);
-            RandomizeTonesToggler.setText(buttonText);
+            String buttonText = appPrefs.getString(BUTTON_TEXT, RRConstants.OFF_STATE_TEXT);
+            randomizeTonesToggler.setText(buttonText);
             if(buttonText.equals(RRConstants.OFF_STATE_TEXT)) {
-                RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
+                randomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
             } else {
-                RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.ON_STATE_COLOR));
+                randomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.ON_STATE_COLOR));
             }
         }
     }
@@ -173,23 +164,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleCallDetectService() {
         Intent intent = new Intent(this, CallDetectService.class);
-        if (appPrefs.getString("buttonText", RRConstants.OFF_STATE_TEXT).equals(RRConstants.OFF_STATE_TEXT)) {
+        if (appPrefs.getString(BUTTON_TEXT, RRConstants.OFF_STATE_TEXT).equals(RRConstants.OFF_STATE_TEXT)) {
             startService(intent);
-            RandomizeTonesToggler.setText(RRConstants.ON_STATE_TEXT);
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.ON_STATE_COLOR));
-            updatePrefs("buttonText", RRConstants.ON_STATE_TEXT);
+            randomizeTonesToggler.setText(RRConstants.ON_STATE_TEXT);
+            randomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.ON_STATE_COLOR));
+            updatePrefs(BUTTON_TEXT, RRConstants.ON_STATE_TEXT);
         } else {
             stopService(intent);
-            RandomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
-            RandomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
-            updatePrefs("buttonText", RRConstants.OFF_STATE_TEXT);
+            randomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
+            randomizeTonesToggler.setBackgroundColor(ContextCompat.getColor(this, RRConstants.OFF_STATE_COLOR));
+            updatePrefs(BUTTON_TEXT, RRConstants.OFF_STATE_TEXT);
         }
     }
 
-    private void stopCallDetectService() {
-        Intent intent = new Intent(this, CallDetectService.class);
-        stopService(intent);
-    }
+//    private void stopCallDetectService() {
+//        Intent intent = new Intent(this, CallDetectService.class);
+//        stopService(intent);
+//    }
 
     private void listSavedTones() {
         Map<String, ?> songsKeyVal = songsList.getAll();
@@ -201,52 +192,34 @@ public class MainActivity extends AppCompatActivity {
         ringtonesList.setAdapter(arrayAdapter);
     }
 
-    private void playRingtone() {
-        Ringtone defaultRingtone = RingtoneManager.getRingtone(getApplicationContext(),
-                Settings.System.DEFAULT_RINGTONE_URI);
-        defaultRingtone.play();
-    }
-
-    private void playASong(Uri uri) {
-        MediaPlayer mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        try {
-            mediaPlayer.setDataSource(getApplicationContext(), uri);
-            mediaPlayer.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mediaPlayer.start();
-    }
-
-    private Cursor getMediaCursor() {
-        String[] mProjection =
-                {
-                        MediaStore.Audio.Media._ID,
-                        MediaStore.Audio.Media.ALBUM
-                };
-        String mSelectionClause = null;
-        String[] mSelectionArgs = null;
-        //        mSelectionArgs[0] = "";
-        String mSortOrder = null;
-        Log.i(TAG, "URI " + MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-        mCursor = getContentResolver().query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                mProjection,
-                mSelectionClause,
-                mSelectionArgs,
-                mSortOrder);
-        if (null == mCursor) {
-        } else if (mCursor.getCount() < 1) {
-        } else {
-            int limit = 1;
-            while (mCursor.moveToNext() && limit > 0) {
-                Log.i(TAG, "title " + mCursor.getString(0));
-                Log.i(TAG, "album " + mCursor.getString(1));
-            }
-        }
-        return mCursor;
-    }
+//    private Cursor getMediaCursor() {
+//        String[] mProjection =
+//                {
+//                        MediaStore.Audio.Media._ID,
+//                        MediaStore.Audio.Media.ALBUM
+//                };
+//        String mSelectionClause = null;
+//        String[] mSelectionArgs = null;
+//        //        mSelectionArgs[0] = "";
+//        String mSortOrder = null;
+//        Log.i(TAG, "URI " + MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+//        mCursor = getContentResolver().query(
+//                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                mProjection,
+//                mSelectionClause,
+//                mSelectionArgs,
+//                mSortOrder);
+//        if (null == mCursor) {
+//        } else if (mCursor.getCount() < 1) {
+//        } else {
+//            int limit = 1;
+//            while (mCursor.moveToNext() && limit > 0) {
+//                Log.i(TAG, "title " + mCursor.getString(0));
+//                Log.i(TAG, "album " + mCursor.getString(1));
+//            }
+//        }
+//        return mCursor;
+//    }
 
     private void checkForPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -293,12 +266,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           String[] permissions,
+                                           int[] grantResults) {
         super.onRequestPermissionsResult(requestCode,
                 permissions,
                 grantResults);
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -306,17 +280,12 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                 }
-                return;
-            }
-            case MY_PERMISSIONS_WRITE_SETTINGS: {
+                break;
+
+            case MY_PERMISSIONS_WRITE_SETTINGS:
                 isWriteSettingsPermsnGranted = true;
                 toggleCallDetectService();
-            }
-            break;
-            case MY_PERMISSIONS_BOOT_COMPLETE: {
-                Log.i(TAG, "gott the permission");
-            }
-            break;
+                break;
         }
     }
 
@@ -367,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             persistSong(cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)), uri);
                         }
-                        Log.i(TAG, allColumns.toString());
+                        Log.i(TAG, Arrays.toString(allColumns));
 
                     }
                 }
@@ -384,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
     private class SelectionAdapter extends ArrayAdapter<String> {
         private Context context;
 
-        private HashMap<Integer, Boolean> mSelection = new HashMap<Integer, Boolean>();
+        private HashMap<Integer, Boolean> mSelection = new HashMap<>();
 
         public SelectionAdapter(Context context, int resource) {
 
@@ -396,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
             Iterator it = mSelection.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry keyVal = (Map.Entry) it.next();
-                if((Boolean)keyVal.getValue() == true) {
+                if((Boolean)keyVal.getValue()) {
                     String title = getItem((Integer)keyVal.getKey());
                     arrayAdapter.remove(title);
                     sonsListEditor.remove(title);
@@ -427,7 +396,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void clearSelection() {
-            mSelection = new HashMap<Integer, Boolean>();
+            mSelection = new HashMap<>();
             notifyDataSetChanged();
         }
 
