@@ -14,9 +14,6 @@ import android.os.IBinder;
  */
 public class CallDetectService extends Service {
 	private CallHelper callHelper;
- 
-    public CallDetectService() {
-    }
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {

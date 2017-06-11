@@ -10,4 +10,8 @@ public class RRConstants {
 
     public static final int ON_STATE_COLOR = R.color.red;
     public static final int OFF_STATE_COLOR = R.color.green;
+
+    private RRConstants() {
+        
+    }
 }
