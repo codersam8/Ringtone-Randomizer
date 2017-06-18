@@ -68,10 +68,10 @@ public class MainActivity extends AppCompatActivity {
         randomizeTonesToggler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(isWriteSettingsPermsnGranted) {
+                if(checkIfWriteSettingsPrmsnGranted()) {
                     toggleCallDetectService();
                 } else {
-                    checkForWriteSettingsPermsn();
+                    requestForWriteSettingPrmsn();
                 }
             }
         });
@@ -238,21 +238,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void checkForWriteSettingsPermsn() {
+    private void requestForWriteSettingPrmsn() {
 //        if(! Settings.System.canWrite(this)) {
 //            ActivityCompat.requestPermissions(this,
 //                    new String[] {Manifest.permission.WRITE_SETTINGS},
 //                    MY_PERMISSIONS_WRITE_SETTINGS);
 //        }
-        boolean permission;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            permission = Settings.System.canWrite(this);
-        } else {
-            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_SETTINGS) == PackageManager.PERMISSION_GRANTED;
-        }
-        if (permission) {
-            //do your code
-        } else {
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
                 intent.setData(Uri.parse("package:" + this.getPackageName()));
@@ -260,7 +252,17 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_SETTINGS}, MY_PERMISSIONS_WRITE_SETTINGS);
             }
+
+    }
+
+    private boolean checkIfWriteSettingsPrmsnGranted() {
+        boolean permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            permission = Settings.System.canWrite(this);
+        } else {
+            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_SETTINGS) == PackageManager.PERMISSION_GRANTED;
         }
+        return permission;
     }
 
 
