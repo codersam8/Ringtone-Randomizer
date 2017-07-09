@@ -48,12 +48,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int SELECTED_A_FILE = 1;
     private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
-    private static final int MY_PERMISSIONS_BOOT_COMPLETE = 3;
 
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
     private static final String BUTTON_TEXT = "buttonText";
-    private static boolean isWriteSettingsPermsnGranted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -279,13 +277,10 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     chooseFile();
-
-                } else {
                 }
                 break;
 
             case MY_PERMISSIONS_WRITE_SETTINGS:
-                isWriteSettingsPermsnGranted = true;
                 toggleCallDetectService();
                 break;
         }
@@ -293,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void chooseFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("audio/*");
         startActivityForResult(intent, SELECTED_A_FILE);
     }
@@ -345,7 +341,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case MY_PERMISSIONS_WRITE_SETTINGS:
                 if (Settings.System.canWrite(this)) {
-                    isWriteSettingsPermsnGranted = true;
                     toggleCallDetectService();
                 }
                 break;

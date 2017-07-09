@@ -41,6 +41,7 @@ public class CallHelper {
             songsColl.toArray(songListArr);
 
             Uri ringToneUri;
+            Log.i(TAG, "Previous tone was " + RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE));
             do {
                 ringToneUri = Uri.parse(songListArr[new Random().nextInt(songListArr.length)]);
             } while (RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE).equals(ringToneUri));
