@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     private static final int SELECTED_A_FILE = 1;
     private static final int MY_PERMISSIONS_WRITE_SETTINGS = 2;
+    private static final int MY_PERMISSIONS_READ_PHONE_STATE = 3;
 
     private static final String SONGS_LIST = "SongsList";
     private static final String APP_PREFS = "AppPrefs";
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        checkIfHasReadPhoneState();
         ringtonesList = (ListView) findViewById(R.id.ringtones_list);
         appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         appPrefsEditor = appPrefs.edit();
@@ -139,6 +140,18 @@ public class MainActivity extends AppCompatActivity {
 //        sonsListEditor.commit();
 //    }
 
+    private void checkIfHasReadPhoneState() {
+        int perm = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_PHONE_STATE);
+        Log.i(TAG, "Granted " + perm);
+        if (ContextCompat.checkSelfPermission(this,
+                                              Manifest.permission.READ_PHONE_STATE)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                                              new String[] {Manifest.permission.READ_PHONE_STATE},
+                                              MY_PERMISSIONS_READ_PHONE_STATE);
+        }
+    }
     private void setButtonTextAndColor() {
         if (appPrefs == null) {
             randomizeTonesToggler.setText(RRConstants.OFF_STATE_TEXT);
@@ -283,6 +296,11 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_WRITE_SETTINGS:
                 toggleCallDetectService();
                 break;
+            case MY_PERMISSIONS_READ_PHONE_STATE:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.i(TAG, "READ_PHONE_STATE granted");
+                }
         }
     }
 
