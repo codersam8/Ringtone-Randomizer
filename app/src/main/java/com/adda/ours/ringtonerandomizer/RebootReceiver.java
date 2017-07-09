@@ -11,8 +11,6 @@ public class RebootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-//        Intent startServiceIntent = new Intent(context, CallDetectService.class);
-//        context.startService(startServiceIntent);
         String buttonText = context.getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE)
                 .getString("buttonText", RRConstants.OFF_STATE_TEXT);
         if(buttonText.equals(RRConstants.ON_STATE_TEXT)) {

@@ -1,9 +1,6 @@
 package com.adda.ours.ringtonerandomizer;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -35,25 +32,26 @@ public class CallHelper {
                     break;
             }
         }
-    }
-    private void chooseARandomTone() {
-        songsList = ctx.getSharedPreferences("SongsList", ctx.MODE_PRIVATE);
-        Map<String, String> songsMap = (Map<String, String>)songsList.getAll();
-        Collection<String> songsColl = (Collection<String>) songsMap.values();
-        String[] songListArr = new String[songsColl.size()];
-        songsColl.toArray(songListArr);
-//        for(String song: songListArr) {
-//            Log.i(TAG, song);
-//        }
-        Uri ringToneUri;
-        do {
-            ringToneUri = Uri.parse(songListArr[new Random().nextInt(songListArr.length)]);
-        } while (RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE).equals(ringToneUri));
 
-        RingtoneManager.setActualDefaultRingtoneUri(ctx,
-                RingtoneManager.TYPE_RINGTONE,
-                ringToneUri);
+        private void chooseARandomTone() {
+            songsList = ctx.getSharedPreferences("SongsList", ctx.MODE_PRIVATE);
+            Map<String, String> songsMap = (Map<String, String>)songsList.getAll();
+            Collection<String> songsColl = songsMap.values();
+            String[] songListArr = new String[songsColl.size()];
+            songsColl.toArray(songListArr);
+
+            Uri ringToneUri;
+            Log.i(TAG, "Previous tone was " + RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE));
+            do {
+                ringToneUri = Uri.parse(songListArr[new Random().nextInt(songListArr.length)]);
+            } while (RingtoneManager.getActualDefaultRingtoneUri(ctx, RingtoneManager.TYPE_RINGTONE).equals(ringToneUri));
+            Log.i(TAG, "Selected tone is " + ringToneUri);
+            RingtoneManager.setActualDefaultRingtoneUri(ctx,
+                    RingtoneManager.TYPE_RINGTONE,
+                    ringToneUri);
+        }
     }
+
     private SharedPreferences songsList;
     private Context ctx;
     private TelephonyManager tm;
@@ -71,8 +69,6 @@ public class CallHelper {
     public void start() {
         tm = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-
-        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_NEW_OUTGOING_CALL);
     }
 
     /**
